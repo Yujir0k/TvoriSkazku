@@ -122,6 +122,70 @@
 - **PDF:** генерация книг на backend.
 - **Tests:** Vitest.
 
+### Запуск проекта
+
+1. Скопируйте шаблон переменных окружения:
+
+```bash
+cp .env.example .env
+cp .env backend/.env
+```
+
+2. Заполните обязательные переменные в `.env` и `backend/.env`.
+
+Для полноценной генерации сказок нужны реальные значения:
+
+```env
+YANDEX_API_KEY=
+YANDEX_FOLDER_ID=
+```
+
+Для локального smoke-запуска без зарубежной озвучки можно оставить:
+
+```env
+FOREIGN_TTS_ENABLED=false
+FOREIGN_TTS_RELAY_URL=http://127.0.0.1:3999
+```
+
+3. Установите зависимости:
+
+```bash
+npm install
+npm --prefix backend install
+npm --prefix foreign-tts-relay install
+```
+
+4. Поднимите локальную инфраструктуру:
+
+```bash
+docker compose up -d
+```
+
+5. Подготовьте Prisma и примените миграции:
+
+```bash
+npm --prefix backend run prisma:generate
+npm --prefix backend run prisma:deploy
+```
+
+6. Запустите backend:
+
+```bash
+npm --prefix backend run dev
+```
+
+7. В отдельном терминале запустите frontend:
+
+```bash
+npm run dev
+```
+
+После запуска:
+
+- frontend: `http://127.0.0.1:3000`
+- backend API: `http://127.0.0.1:3001`
+- health check: `http://127.0.0.1:3001/api/health`
+
 ### Проверки
 
 ```bash
@@ -134,3 +198,9 @@ npm --prefix backend run build
 ### Окружение
 
 Шаблон переменных находится в `.env.example`. Реальные ключи и пароли должны храниться только в локальных `.env` файлах или в переменных окружения хостинга.
+
+## Лицензия
+
+Проект опубликован для демонстрации и оценки в рамках хакатона Kodik. Свободное использование, копирование, модификация, распространение, коммерческое применение или публикация производных решений без письменного разрешения правообладателей не разрешаются.
+
+Подробнее: [LICENSE](LICENSE).
