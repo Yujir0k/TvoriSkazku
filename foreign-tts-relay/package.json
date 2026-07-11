@@ -1,0 +1,15 @@
+{
+  "name": "tvoriskazku-tts-relay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Stateless TTS relay for ElevenLabs — receives cleaned text, calls ElevenLabs, returns audio. No storage. No logging of text.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@fastify/rate-limit": "^11.1.0",
+    "fastify": "^5.0.0"
+  }
+}

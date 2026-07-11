@@ -1,0 +1,2 @@
+ALTER TABLE "stories"
+ADD COLUMN "narratorVoiceId" TEXT NOT NULL DEFAULT 'TX3LPaxmHKxFdv7VOQHJ';

@@ -1,0 +1,364 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String
+  email           String
+  normalizedEmail String   @unique
+  passwordHash    String
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset[]
+
+  userFiles        UserFile[]
+  stories          Story[]
+  childProfiles    ChildProfile[]
+  characters       Character[]
+  subscription     Subscription?
+  usageCounter     UsageCounter[]
+  storyAudio       StoryAudio[]
+  listeningProgress ListeningProgress[]
+  privacyConsents  PrivacyConsent[]
+  voiceConsents    VoiceConsent[]
+  voiceSamples     VoiceSample[]
+  scenes           StoryScene[]
+  illustrations    StoryIllustration[]
+  bookProjects     BookProject[]
+
+  @@index([normalizedEmail])
+  @@map("users")
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId])
+  @@map("email_verifications")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId])
+  @@map("password_resets")
+}
+
+model Story {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  content   String   @default("")
+  status    String   @default("draft")
+  narratorVoiceId String @default("TX3LPaxmHKxFdv7VOQHJ")
+  /**
+   * JSON-строка с массивом имён для очистки перед отправкой на foreign TTS.
+   * Заполняется при генерации сказки (childName, childProfile.name, characters).
+   * Используется только на российском backend. Не логируется, не уходит за границу.
+   * Формат: ["Аня", "Маша", ...] или null.
+   */
+  personalizationNames String? @map("personalization_names")
+  /**
+   * Статус privacy для foreign TTS:
+   * - null или 'known' — personalizationNames известны (или история не персонализирована)
+   * - 'unknown' — история создана с generationJobId, но job не найден и имена не переданы
+   * - 'blocked' — foreign TTS для этой истории небезопасен
+   */
+  ttsPrivacyStatus String? @map("tts_privacy_status")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  storyAudio StoryAudio[]
+  listeningProgress ListeningProgress[]
+  scenes StoryScene[]
+  illustrations StoryIllustration[]
+  bookProjects BookProject[]
+
+  @@index([userId])
+  @@index([userId, status])
+  @@map("stories")
+}
+
+model ChildProfile {
+  id               String   @id @default(cuid())
+  userId           String
+  name             String
+  age              String   @default("")
+  ageGroup         String   @default("6-8")
+  interests        String   @default("")
+  favoriteThemes   String   @default("")
+  description      String   @default("")
+  photoObjectName  String?
+  presetAvatarId   String   @default("bunny-wizard")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  characters Character[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("child_profiles")
+}
+
+model Character {
+  id              String   @id @default(cuid())
+  userId          String
+  childProfileId  String?
+  name            String
+  role            String   @default("")
+  description     String   @default("")
+  traits          String   @default("")
+  interests       String   @default("")
+  photoObjectName String?
+  presetAvatarId  String   @default("fox-lantern")
+  voiceId         String   @default("")
+  voiceEnabled    Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  childProfile ChildProfile? @relation(fields: [childProfileId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([childProfileId])
+  @@map("characters")
+}
+
+model UserFile {
+  id           String   @id @default(cuid())
+  userId       String
+  objectName   String   @unique
+  originalName String
+  mimeType     String
+  category     String   @default("other")
+  size         Int
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_files")
+}
+
+model PrivacyConsent {
+  id              String   @id @default(cuid())
+  userId          String
+  consentVersion  String
+  acceptedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, consentVersion])
+  @@index([userId])
+  @@map("privacy_consents")
+}
+
+model Subscription {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  plan       String   @default("free")
+  periodStart DateTime @default(now())
+  periodEnd  DateTime
+  autoRenew  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model StoryAudio {
+  id        String   @id @default(cuid())
+  storyId   String
+  userId    String
+  voiceId   String   @default("TX3LPaxmHKxFdv7VOQHJ")
+  provider  String   @default("elevenlabs")
+  status    String   @default("creating")
+  objectName String?
+  mimeType  String   @default("audio/mpeg")
+  durationMs Int     @default(0)
+  error     String?
+  mode      String   @default("single")
+  expressive Boolean @default(true)
+  progress  Int      @default(0)
+  jobId           String?
+  characterVoices String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listeningProgress ListeningProgress[]
+
+  @@index([storyId])
+  @@index([userId])
+  @@map("story_audio")
+}
+
+model ListeningProgress {
+  id          String   @id @default(cuid())
+  storyId     String
+  storyAudioId String
+  userId      String
+  positionMs  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  story      Story      @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  storyAudio StoryAudio @relation(fields: [storyAudioId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyAudioId])
+  @@index([userId])
+  @@map("listening_progress")
+}
+
+model VoiceConsent {
+  id             String   @id @default(cuid())
+  userId         String
+  consentVersion String   @default("1.0")
+  acceptedAt     DateTime @default(now())
+  revokedAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  voiceSamples VoiceSample[]
+
+  @@index([userId])
+  @@map("voice_consents")
+}
+
+model VoiceSample {
+  id         String   @id @default(cuid())
+  userId     String
+  consentId  String
+  name       String
+  objectName String   @unique
+  mimeType   String
+  size       Int
+  durationMs Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consent VoiceConsent @relation(fields: [consentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("voice_samples")
+}
+
+model StoryScene {
+  id          String   @id @default(cuid())
+  storyId     String
+  userId      String
+  position    Int
+  title       String   @default("")
+  description String   @default("")
+  style       String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  illustrations StoryIllustration[]
+
+  @@unique([storyId, position])
+  @@index([storyId])
+  @@index([userId])
+  @@map("story_scenes")
+}
+
+model StoryIllustration {
+  id         String   @id @default(cuid())
+  storyId    String
+  sceneId    String?
+  userId     String
+  style      String   @default("")
+  status     String   @default("uploaded")
+  provider   String?
+  providerJobId String?
+  objectName String?
+  mimeType   String   @default("image/jpeg")
+  error      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  scene StoryScene? @relation(fields: [sceneId], references: [id], onDelete: SetNull)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+  @@index([userId])
+  @@index([providerJobId])
+  @@map("story_illustrations")
+}
+
+model BookProject {
+  id            String   @id @default(cuid())
+  userId        String
+  storyId       String
+  title         String
+  authorName    String   @default("")
+  format        String   @default("a4")
+  coverSettings String   @default("{}")
+  pdfObjectName String?
+  status        String   @default("draft")
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([storyId])
+  @@map("book_projects")
+}
+
+model UsageCounter {
+  id         String   @id @default(cuid())
+  userId     String
+  resource   String
+  used       Int      @default(0)
+  periodStart DateTime @default(now())
+  periodEnd  DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, resource, periodStart])
+  @@map("usage_counters")
+}

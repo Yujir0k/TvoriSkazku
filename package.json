@@ -1,0 +1,38 @@
+{
+  "name": "tvoriskazku",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:frontend": "vite",
+    "dev:infra": "docker compose up -d",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:all": "node scripts/dev-all.mjs",
+    "build": "vite build",
+    "build:backend": "npm --prefix backend run build",
+    "test": "vitest run --passWithNoTests",
+    "test:backend": "npm --prefix backend run test",
+    "migrate:backend": "npm --prefix backend run prisma:migrate",
+    "prisma:generate": "npm --prefix backend run prisma:generate",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "fontkit": "^2.0.4",
+    "lucide-react": "^0.344.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/fontkit": "^2.0.9",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^6.0.3",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^8.1.2",
+    "vitest": "^4.1.9"
+  }
+}
