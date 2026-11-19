@@ -217,4 +217,4 @@ npm --prefix backend run build
 
 ## Диплом
 
-<p align="center"><img src="certificate-3.png" width="85%" alt="Сертификат Игоря Борисова за победу в номинации Выбор Kodik Advanced" /></p>
+<p align="center"><img src="docs/certificates/13_Kodik_winner_RU.png" width="85%" alt="Сертификат Игоря Борисова за победу в номинации Выбор Kodik Advanced" /></p>
