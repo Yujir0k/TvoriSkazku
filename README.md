@@ -16,6 +16,8 @@
 
 Проект создан командой R² negative при участии Игоря Борисова.
 
+<p align="center"><img src="docs/certificates/13_Kodik_winner_RU.png" width="85%" alt="Сертификат Игоря Борисова за победу в номинации Выбор Kodik Advanced" /></p>
+
 ## Идея
 
 У родителей часто есть желание придумать ребёнку сказку о нём самом: про любимого героя, привычную ситуацию, страх, мечту или маленькую победу. Но каждый вечер писать хорошую историю с нуля сложно.
@@ -215,6 +217,3 @@ npm --prefix backend run build
 
 Подробнее: [LICENSE](LICENSE).
 
-## Диплом
-
-<p align="center"><img src="docs/certificates/13_Kodik_winner_RU.png" width="85%" alt="Сертификат Игоря Борисова за победу в номинации Выбор Kodik Advanced" /></p>
